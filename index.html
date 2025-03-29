@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Chess</title>
+  <link rel="stylesheet" href="css/chessboard-1.0.0.min.css">
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"
+          integrity="sha384-ZvpUoO/+PpLXR1lu4jmpXWu80pZlYUAfxl5NsBMWOEPSjUn/6Z/hRTt8+pR6L4N2"
+          crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+  <script src="js/chessboard-1.0.0.min.js"></script>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 20px;
+    }
+    #board {
+      width: 400px;
+      margin: auto;
+    }
+    button {
+      margin-top: 10px;
+      padding: 10px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    #evaluation {
+      margin-top: 15px;
+      font-size: 18px;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <h2>Play Against the Chess AI</h2>
+  <div id="board"></div>
+  <button id="reset-btn">Reset Game</button>
+  <br>
+  <button id="eval-btn">Evaluate Position</button>
+  <div id="evaluation"></div>
+  
+  <script>
+    var board;
+    var customFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+    //var customFen = "8/3K4/4P3/8/8/8/6k1/7q w - - 0 1"
+    var game = new Chess(customFen);
+
+  
+    // Function to update evaluation from the backend
+    function updateEvaluation() {
+      $.ajax({
+        url: 'http://127.0.0.1:5000/evaluate',
+        method: 'POST',
+        success: function(data){
+          if(data.evaluation !== undefined){
+            $('#evaluation').text("Evaluation: " + data.evaluation + " centipawns");
+          } else {
+            $('#evaluation').text("Error: " + data.error);
+          }
+        },
+        error: function(err){
+          console.error("Error getting evaluation:", err);
+        }
+      });
+    }
+  
+    // Called when the user drops a piece on the board
+    function onDrop(source, target) {
+      // Check if the move is a pawn promotion candidate.
+      var piece = game.get(source);
+      var move;
+      if (piece && piece.type === 'p') {
+        // For white, a pawn promotes when moving to rank "8"; for black, when moving to rank "1"
+        if ((piece.color === 'w' && target[1] === "8") ||
+            (piece.color === 'b' && target[1] === "1")) {
+          // Ask the user what piece they want to promote to.
+          var promotion = prompt("Promote pawn to (q, r, b, n):", "q");
+          // Validate the input, default to queen if invalid.
+          if (!promotion || !"qrbn".includes(promotion.toLowerCase())) {
+            promotion = "q";
+          }
+          move = game.move({ from: source, to: target, promotion: promotion.toLowerCase() });
+        } else {
+          move = game.move({ from: source, to: target });
+        }
+      } else {
+        move = game.move({ from: source, to: target });
+      }
+      
+      if (move === null) return 'snapback'; // Illegal move
+
+      var uciMove = move.from + move.to + (move.promotion ? move.promotion : '');
+      console.log("Sending move:", uciMove);
+
+      $.ajax({
+        url: 'http://127.0.0.1:5000/move',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ move: uciMove }),
+        success: function(data) {
+          console.log("Server response:", data);
+          if (data.ai_move) {
+            var aiUci = data.ai_move;
+            var aiMoveObj = {
+              from: aiUci.slice(0, 2),
+              to: aiUci.slice(2, 4)
+            };
+            if (aiUci.length === 5) {
+              aiMoveObj.promotion = aiUci.charAt(4);
+            }
+            var result = game.move(aiMoveObj);
+            if (!result) {
+              console.error("Failed to apply AI move:", aiMoveObj);
+            }
+            board.position(game.fen());
+          } else {
+            console.log("AI move missing:", data.message);
+          }
+          updateEvaluation();
+        },
+        error: function(err) {
+          console.error("Error sending move:", err);
+        }
+      });
+    }
+
+  
+    $(document).ready(function () {
+      // Use the same custom FEN as in your backend
+      customFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+      //customFen = "8/3K4/4P3/8/8/8/6k1/7q w - - 0 1"
+
+      board = Chessboard('board', {
+        draggable: true,
+        position: customFen,  // Set the custom starting position
+        onDrop: onDrop
+      });
+      
+      $('#reset-btn').click(function () {
+        $.post('http://127.0.0.1:5000/reset', function(data) {
+          game.load(customFen); // Reset the frontend chess.js game to the custom position
+          board.position(customFen);
+          $('#evaluation').text("");
+        });
+      });
+      
+      // Evaluation button for manual evaluation (if needed)
+      $('#eval-btn').click(function(){
+        updateEvaluation();
+      });
+    });
+
+  </script>
+</body>
+</html>
