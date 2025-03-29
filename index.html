@@ -51,7 +51,7 @@
     // Function to update evaluation from the backend
     function updateEvaluation() {
       $.ajax({
-        url: 'http://127.0.0.1:5000/evaluate',
+        url: 'https://website-backend-25yd.onrender.com/evaluate',
         method: 'POST',
         success: function(data){
           if(data.evaluation !== undefined){
@@ -95,7 +95,7 @@
       console.log("Sending move:", uciMove);
 
       $.ajax({
-        url: 'http://127.0.0.1:5000/move',
+        url: 'https://website-backend-25yd.onrender.com/move',
         method: 'POST',
         contentType: 'application/json',
         data: JSON.stringify({ move: uciMove }),
@@ -139,7 +139,7 @@
       });
       
       $('#reset-btn').click(function () {
-        $.post('http://127.0.0.1:5000/reset', function(data) {
+        $.post('https://website-backend-25yd.onrender.com/reset', function(data) {
           game.load(customFen); // Reset the frontend chess.js game to the custom position
           board.position(customFen);
           $('#evaluation').text("");
