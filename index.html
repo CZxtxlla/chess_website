@@ -51,7 +51,7 @@
     // Function to update evaluation from the backend
     function updateEvaluation() {
       $.ajax({
-        url: 'https://website-backend-25yd.onrender.com/evaluate',
+        url: 'http://127.0.0.1:5000/evaluate', //'https://website-backend-25yd.onrender.com/evaluate',
         method: 'POST',
         success: function(data){
           if(data.evaluation !== undefined){
@@ -95,7 +95,7 @@
       console.log("Sending move:", uciMove);
 
       $.ajax({
-        url: 'https://website-backend-25yd.onrender.com/move',
+        url: 'http://127.0.0.1:5000/move', //'https://website-backend-25yd.onrender.com/move',
         method: 'POST',
         contentType: 'application/json',
         data: JSON.stringify({ move: uciMove }),
