@@ -92,7 +92,9 @@ king_endgame_table = [
 -50,-30,-30,-30,-30,-30,-30,-50]
 
 def endgame_weight(board):
-    """Returns a weight for the endgame based on the number of non-pawn pieces left."""
+    """
+    Returns a weight for the endgame based on the number of non-pawn pieces left
+    """
     pieces = board.piece_map().values()
     num_non_pawn_pieces = 0
     num_of_queens = 0
@@ -118,6 +120,9 @@ def endgame_weight(board):
 
 
 def piece_square_value(board, piece, square, color, weight):
+    """
+    Returns the piece-square value for a given piece and square
+    """
     if color == chess.WHITE:
         square = chess.square_mirror(square)
     if piece == chess.PAWN:
@@ -139,7 +144,9 @@ def piece_square_value(board, piece, square, color, weight):
     return 0
 
 def force_king_to_corner_endgame(board, weight):
-    """Forces the enemy king to the corner in the endgame by encouraging central control."""
+    """
+    Forces the enemy king to the corner in the endgame by encouraging central control
+    """
     
     opponent_king_square = board.king(not board.turn)  # Get opponent's king square
     opponent_king_rank = chess.square_rank(opponent_king_square)
@@ -169,7 +176,9 @@ def force_king_to_corner_endgame(board, weight):
 
 
 def evaluate_board(board):
-    """Simple evaluation: count material"""
+    """
+    Simple evaluation: count material, piece-square values, and endgame weight
+    """
     values = {
         chess.PAWN: 100, 
         chess.KNIGHT: 320, 
@@ -296,7 +305,7 @@ def minimax(board, depth, alpha, beta, maximizing):
     alpha_orig = alpha
     beta_orig = beta
     
-    # Use Zobrist hash for a more efficient key.
+    # Use Zobrist hash
     key = chess.polyglot.zobrist_hash(board)
 
     # Check the transposition table.
@@ -313,7 +322,7 @@ def minimax(board, depth, alpha, beta, maximizing):
             if alpha >= beta:
                 return entry['score']
 
-    # Terminal condition: leaf node.
+    # Terminal condition: leaf node
     if depth == 0 or board.is_game_over():
         if board.is_checkmate():
             score = -9999999 - (10 * depth) if board.turn == chess.WHITE else 9999999 + (10 * depth)
@@ -383,7 +392,7 @@ def minimax(board, depth, alpha, beta, maximizing):
 
 def iterative_deepening(board, max_depth, time_limit=None):
     """
-    Iteratively deepens the search to a maximum depth or until the time limit is reached.
+    Iteratively deepens the search to a maximum depth or until the time limit is reached
     """
     
     best_move_found = None
@@ -405,7 +414,9 @@ def iterative_deepening(board, max_depth, time_limit=None):
 
 
 def best_move(board, depth):
-    """Find the best move using Minimax"""
+    """
+    Find the best move using Minimax
+    """
     global minimax_calls
     global transpositions
     minimax_calls = 0
@@ -440,7 +451,6 @@ def best_move(board, depth):
         print("number of transpositions {}".format(transpositions))
         return best
     
-# Example usage:
 if __name__ == "__main__":
     # Initialize a chess board
     board = chess.Board()
@@ -455,19 +465,16 @@ if __name__ == "__main__":
         print(board)
 
         # Get the best move from the bot (AI)
-        #move = best_move(board, depth=3)
         move = iterative_deepening(board, max_depth=7, time_limit=5)
         
-        # Print the move the bot decided on
+        # Print the move of the bot
         print(f"Bot plays: {move}")
         
         # Make the move on the board
         board.push(move)
 
-        # If it's the opponent's turn (Human or other AI), simulate it here
         if not board.is_game_over():
-            # You can replace this with human input or another AI logic
-            print("Opponent's turn... (you can simulate this part as you like)")
+            print("Opponent's turn...")
 
     # Print the final board position and the result of the game
     print("\nGame over!")
