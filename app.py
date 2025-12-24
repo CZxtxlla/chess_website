@@ -26,7 +26,7 @@ def make_move():
             board.push(move)  # Player move
 
             # AI move using your minimax-based engine
-            ai_move = best_move(board, depth=3)
+            ai_move = best_move(board, depth=4)
             #ai_move = iterative_deepening(board, max_depth=7, time_limit=0.5)
             if ai_move:
                 board.push(ai_move)

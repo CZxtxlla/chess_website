@@ -205,9 +205,9 @@ def evaluate_board(board):
             score += multiplier * piece_square_value(board, piece.piece_type, square, piece.color, weight)
         else:
             score -= multiplier * piece_square_value(board, piece.piece_type, square, piece.color, weight)
-    #if board.turn == chess.WHITE:
-        #core += 2 * force_king_to_corner_endgame(board, weight)
-    #if board.turn == chess.BLACK:
+    if board.turn == chess.WHITE:
+        score += force_king_to_corner_endgame(board, weight)
+    else:
         score -= force_king_to_corner_endgame(board, weight)
     return score
 
@@ -425,26 +425,30 @@ def best_move(board, depth):
     if board.turn == chess.WHITE:
         best = None
         max_eval = float('-inf')
+        alpha = float('-inf')
         for move in moves:
             board.push(move)
-            eval_score = minimax(board, depth - 1, -float('inf'), float('inf'), False)
+            eval_score = minimax(board, depth - 1, alpha, float('inf'), False)
             board.pop()
             if eval_score > max_eval:
                 max_eval = eval_score
                 best = move
+            alpha = max(alpha, eval_score)
         print("max eval {}".format(max_eval))
         print("number of calls {}".format(minimax_calls))
         return best
     else:
         best = None
         min_eval = float('inf')
+        beta = float('inf')
         for move in moves:
             board.push(move)
-            eval_score = minimax(board, depth - 1, -float('inf'), float('inf'), True)
+            eval_score = minimax(board, depth - 1, -float('inf'), beta, True)
             board.pop()
             if eval_score < min_eval:
                 min_eval = eval_score
                 best = move
+            beta = min(beta, eval_score)
         print("min eval {}".format(min_eval))
         print("best move {}".format(best))
         print("number of calls {}".format(minimax_calls))
@@ -465,7 +469,7 @@ if __name__ == "__main__":
         print(board)
 
         # Get the best move from the bot (AI)
-        move = iterative_deepening(board, max_depth=7, time_limit=5)
+        move = iterative_deepening(board, max_depth=10, time_limit=10)
         
         # Print the move of the bot
         print(f"Bot plays: {move}")
