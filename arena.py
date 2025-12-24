@@ -20,10 +20,10 @@ def play_game(game_id, white_player="my_bot", black_player="random"):
     board = chess.Board()
     moves_played = 0
     
-    # Setup Stockfish if needed
+    # Setup Stockfish
     engine = None
     if "stockfish" in [white_player, black_player]:
-        # UPDATE THIS PATH to your local stockfish installation
+        # local stockfish installation
         try:
             engine = chess.engine.SimpleEngine.popen_uci("/opt/homebrew/bin/stockfish")
         except:
@@ -41,9 +41,8 @@ def play_game(game_id, white_player="my_bot", black_player="random"):
         
         # --- SELECT MOVE ---
         if current_player == "my_bot1":
-            # Using your iterative deepening function
             move = best_move(board, depth=3)
-            # Fallback if AI returns None (bug safety)
+            # Fallback if bot returns None
             if move is None:
                 print("Bot returned None, picking random.")
                 move = get_random_move(board)
@@ -65,9 +64,6 @@ def play_game(game_id, white_player="my_bot", black_player="random"):
         board.push(move)
         moves_played += 1
         
-        # Optional: Print board every 10 moves to show progress
-        # if moves_played % 10 == 0:
-        #    print(f"Move {moves_played}:\n{board}")
 
     # --- GAME OVER ---
     if engine: engine.quit()
@@ -82,7 +78,7 @@ def run_tournament():
     results = {"white_wins": 0, "black_wins": 0, "draws": 0}
     
     for i in range(NUM_GAMES):
-        # CHANGE THESE to "my_bot", "random", or "stockfish"
+        # CHANGE THESE to "my_bot1/2", "random", or "stockfish"
         outcome = play_game(i, white_player="my_bot1", black_player="random")
         
         if outcome == "1-0":
